@@ -82,7 +82,7 @@ jobs:
 
       - name: QPM Restore
         run: |
-          qpm-rust restore
+          qpm restore
 
       - name: List Post Restore
         run: |
@@ -96,7 +96,7 @@ jobs:
       - name: Build & Create Qmod
         run: |
           cd ${GITHUB_WORKSPACE}
-          qpm-rust s qmod
+          qpm s qmod
 
       - name: Get Library Name
         id: libname
