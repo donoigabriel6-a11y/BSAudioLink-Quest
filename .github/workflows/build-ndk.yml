@@ -73,7 +73,7 @@ jobs:
         env:
           cache-name: cache-qpm-deps
         with:
-          path: /home/runner/.local/share/QPM-Rust/cache
+          path: /home/runner/.local/share/QPM-RS/cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('qpm.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -96,7 +96,7 @@ jobs:
       - name: Build & Create Qmod
         run: |
           cd ${GITHUB_WORKSPACE}
-          qpm s qmod
+          qpm qmod build
 
       - name: Get Library Name
         id: libname
