@@ -129,14 +129,11 @@ jobs:
           filename: ./build/debug/${{ steps.libname.outputs.NAME }}
 
       - name: Upload qmod
-        if: "${{ env.WEBHOOK != '' }}"
+        if: ${{ env.WEBHOOK != '' }}
         uses: tsickert/discord-webhook@v3.2.0
         with:
           webhook-url: ${{ env.WEBHOOK }}
-          content: |
-            **Build:** #${{ github.run_number }}
-            **Build Succeeded:** 🟢
-            **Download Qmod here:** ⬇️
+          content: "**Build:** #${{ github.run_number }}\\n**Build Succeeded:** 🟢\\n**Download Qmod here:** ⬇️"
           username: "${{ github.repository }}"
-          avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
+          avatar-url: "https://github.com/${{ env.CI_ACTOR }}.png"
           filename: ./${{ env.qmodName }}.qmod
