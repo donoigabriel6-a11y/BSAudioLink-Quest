@@ -65,7 +65,7 @@ jobs:
 
       - name: QPM Collapse
         run: |
-          qpm-rust collapse
+          qpm collapse
 
       - name: QPM Dependencies Cache
         id: cache-qpm-deps
