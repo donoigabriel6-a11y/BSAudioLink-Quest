@@ -87,3 +87,4 @@ extern "C" void load() {
     PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
 #endif
 }
+// Build verification trigger for Beat Saber 1.40.8 port.
