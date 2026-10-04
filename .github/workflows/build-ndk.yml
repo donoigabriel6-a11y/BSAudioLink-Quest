@@ -114,7 +114,7 @@ jobs:
         uses: tsickert/discord-webhook@v3.2.0
         with:
           webhook-url: ${{ env.WEBHOOK }}
-          content: "${{ env.CI_SHA_SHORT }} - `${{ github.event.head_commit.message }}`"
+          content: "${{ env.CI_SHA_SHORT }} - \`${{ github.event.head_commit.message }}\`"
           username: "${{ github.repository }}"
           avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
           filename: ./build/${{ steps.libname.outputs.NAME }}
@@ -133,6 +133,10 @@ jobs:
         uses: tsickert/discord-webhook@v3.2.0
         with:
           webhook-url: ${{ env.WEBHOOK }}
+          content: |
+            **Build:** #${{ github.run_number }}
+            **Build Succeeded:** 🟢
+            **Download Qmod here:** ⬇️
           username: "${{ github.repository }}"
           avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
           filename: ./${{ env.qmodName }}.qmod
