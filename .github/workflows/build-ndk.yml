@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - update/1.40.8
     paths-ignore:
       - "**.yml"
       - "!.github/workflows/build-ndk.yml"
@@ -48,7 +49,7 @@ jobs:
           cat ${GITHUB_WORKSPACE}/ndkpath.txt
 
       - name: Get QPM
-        if: steps.cache-qpm.outputs.cache-hit != 'true'
+        if: steps.cache-qpm-deps.outputs.cache-hit != 'true'
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
