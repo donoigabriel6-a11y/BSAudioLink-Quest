@@ -91,7 +91,7 @@ jobs:
           echo libs:
           ls -la ${GITHUB_WORKSPACE}/extern/libs
           echo cache:
-          ls -la $HOME/.local/share/QPM-Rust/cache
+          ls -la $HOME/.local/share/QPM-RS/cache
 
       - name: Build & Create Qmod
         run: |
