@@ -64,25 +64,18 @@
     ],
     "workspace": {
       "scripts": {
-        "log": [
-          "pwsh ./scripts/log.ps1"
-        ],
-        "clean": [
-          "pwsh ./scripts/build.ps1 -clean"
-        ],
+        "log": ["pwsh ./scripts/log.ps1"],
+        "clean": ["pwsh ./scripts/build.ps1 -clean"],
         "qmod": [
           "pwsh ./scripts/build.ps1 -clean",
-          "qpm-rust qmod build",
+          "qpm qmod build",
           "pwsh ./scripts/createqmod.ps1 AudioLink -clean"
         ],
-        "build": [
-          "pwsh ./scripts/build.ps1"
-        ],
-        "copy": [
-          "pwsh ./scripts/copy.ps1"
-        ]
+        "build": ["pwsh ./scripts/build.ps1"],
+        "copy": ["pwsh ./scripts/copy.ps1"]
       }
     },
     "version": "0.1.0"
-  }
+  },
+  "restoredDependencies": []
 }
