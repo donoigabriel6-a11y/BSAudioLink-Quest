@@ -98,41 +98,12 @@ jobs:
           cd ${GITHUB_WORKSPACE}
           qpm qmod build
 
-      - name: Get Library Name
-        id: libname
-        if: "${{ env.WEBHOOK != '' }}"
-        run: |
-          mapfile -t files < <(find . -type f -name "lib${module_id}*.so" -print)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "No lib${module_id}*.so was produced; skipping Discord upload." >&2
-            exit 1
-          fi
-          echo "NAME=$(basename "${files[0]}")" >> "$GITHUB_OUTPUT"
-
-      - name: Upload release artifact
-        if: "${{ env.WEBHOOK != '' }}"
-        uses: tsickert/discord-webhook@v3.2.0
-        with:
-          webhook-url: ${{ env.WEBHOOK }}
-          content: "${{ env.CI_SHA_SHORT }} - `${{ github.event.head_commit.message }}`"
-          username: "${{ github.repository }}"
-          avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
-          filename: ./build/${{ steps.libname.outputs.NAME }}
-
-      - name: Upload debug artifact
-        if: "${{ env.WEBHOOK != '' }}"
-        uses: tsickert/discord-webhook@v3.2.0
-        with:
-          webhook-url: ${{ env.WEBHOOK }}
-          username: "${{ github.repository }}"
-          avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
-          filename: ./build/debug/${{ steps.libname.outputs.NAME }}
-
       - name: Upload qmod
         if: "${{ env.WEBHOOK != '' }}"
         uses: tsickert/discord-webhook@v3.2.0
         with:
           webhook-url: ${{ env.WEBHOOK }}
+          content: "**Build:** #${{ github.run_number }} | **Build Succeeded:** 🟢 | **Download Qmod here:** ⬇️"
           username: "${{ github.repository }}"
           avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
           filename: ./${{ env.qmodName }}.qmod
