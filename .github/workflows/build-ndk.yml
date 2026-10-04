@@ -60,7 +60,7 @@ jobs:
 
       - name: Put QPM on path
         run: |
-          chmod +x ./QPM/qpm-rust
+          chmod +x ./QPM/qpm
           echo "${GITHUB_WORKSPACE}/QPM" >> $GITHUB_PATH
 
       - name: QPM Collapse
