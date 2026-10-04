@@ -100,11 +100,14 @@ jobs:
 
       - name: Get Library Name
         id: libname
+        if: "${{ env.WEBHOOK != '' }}"
         run: |
-          cd ./build/
-          pattern="lib${module_id}*.so"
-          files=( $pattern )
-          echo ::set-output name=NAME::"${files[0]}"
+          mapfile -t files < <(find . -type f -name "lib${module_id}*.so" -print)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No lib${module_id}*.so was produced; skipping Discord upload." >&2
+            exit 1
+          fi
+          echo "NAME=$(basename "${files[0]}")" >> "$GITHUB_OUTPUT"
 
       - name: Upload release artifact
         if: "${{ env.WEBHOOK != '' }}"
