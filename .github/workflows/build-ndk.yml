@@ -96,7 +96,10 @@ jobs:
       - name: Build & Create Qmod
         run: |
           cd ${GITHUB_WORKSPACE}
-          qpm qmod build
+          qpm qmod manifest
+          pwsh ./scripts/createqmod.ps1 AudioLink -clean
+          test -f ./AudioLink.qmod
+          ls -lh ./AudioLink.qmod
 
       - name: Upload qmod
         if: "${{ env.WEBHOOK != '' }}"
