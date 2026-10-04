@@ -15,70 +15,28 @@
   },
   "workspace": {
     "scripts": {
-      "build": [
-        "pwsh ./scripts/build.ps1"
-      ],
-      "clean": [
-        "pwsh ./scripts/build.ps1 -clean"
-      ],
-      "copy": [
-        "pwsh ./scripts/copy.ps1"
-      ],
-      "log": [
-        "pwsh ./scripts/log.ps1"
-      ],
+      "build": ["pwsh ./scripts/build.ps1"],
+      "clean": ["pwsh ./scripts/build.ps1 -clean"],
+      "copy": ["pwsh ./scripts/copy.ps1"],
+      "log": ["pwsh ./scripts/log.ps1"],
       "qmod": [
         "pwsh ./scripts/build.ps1 -clean",
-        "qpm-rust qmod build",
+        "qpm qmod build",
         "pwsh ./scripts/createqmod.ps1 AudioLink -clean"
       ]
     },
-    "ndk": "^27.2.12479018",
-    "qmodIncludeDirs": [
-      "./build",
-      "./extern/libs"
-    ],
+    "ndk": "^29.0.14206865",
+    "qmodIncludeDirs": ["./build", "./extern/libs"],
     "qmodIncludeFiles": [],
     "qmodOutput": "./AudioLink.qmod"
   },
   "dependencies": [
-    {
-      "id": "beatsaber-hook",
-      "versionRange": "^6.4.2",
-      "additionalData": {}
-    },
-    {
-      "id": "bs-cordl",
-      "versionRange": "^4008.0.0",
-      "additionalData": {}
-    },
-    {
-      "id": "custom-types",
-      "versionRange": "^0.18.3",
-      "additionalData": {}
-    },
-    {
-      "id": "scotland2",
-      "versionRange": "^0.1.6",
-      "additionalData": {
-        "includeQmod": false,
-        "private": true
-      }
-    },
-    {
-      "id": "paper2_scotland2",
-      "versionRange": "^4.6.4",
-      "additionalData": {}
-    },
-    {
-      "id": "lapiz",
-      "versionRange": "^0.2.23",
-      "additionalData": {}
-    },
-    {
-      "id": "sombrero",
-      "versionRange": "^0.1.43",
-      "additionalData": {}
-    }
+    {"id": "beatsaber-hook", "versionRange": "^6.4.2", "additionalData": {}},
+    {"id": "bs-cordl", "versionRange": "^4008.0.0", "additionalData": {}},
+    {"id": "custom-types", "versionRange": "^0.18.3", "additionalData": {}},
+    {"id": "scotland2", "versionRange": "^0.1.6", "additionalData": {"includeQmod": false, "private": true}},
+    {"id": "paper2_scotland2", "versionRange": "^4.6.4", "additionalData": {}},
+    {"id": "lapiz", "versionRange": "^0.2.23", "additionalData": {}},
+    {"id": "sombrero", "versionRange": "^0.1.43", "additionalData": {}}
   ]
 }
