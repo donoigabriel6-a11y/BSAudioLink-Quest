@@ -1,7 +1,7 @@
 #include "_config.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "custom-types/shared/register.hpp"
-#include <dlfcn.h>
+#include "songcore/shared/SongCore.hpp"
 
 #include "config.hpp"
 #include "AssetBundleManager.hpp"
@@ -29,33 +29,8 @@ MAKE_HOOK_MATCH(SongPreviewPlayer_CrossFadeTo, static_cast<void (GlobalNamespace
     if (menuProvider) menuProvider->SongPreviewPlayerProvide(self->_activeChannel, self->_audioSourceControllers);
 }
 
-static void RegisterAudioLinkCapability() {
-    using RegisterCapability_t = void (*)(const char*, __SIZE_TYPE__);
-    static constexpr char capability[] = "AudioLink";
-    static constexpr __SIZE_TYPE__ capabilityLength = sizeof(capability) - 1;
-    static constexpr char symbolNdk[] = "_ZN8SongCore3API12Capabilities18RegisterCapabilityENSt6__ndk117basic_string_viewIcNS2_11char_traitsIcEEEE";
-    static constexpr char symbolStd[] = "_ZN8SongCore3API12Capabilities18RegisterCapabilityESt17basic_string_viewIcSt11char_traitsIcEE";
-
-    void* handle = dlopen("libsongcore.so", RTLD_NOW | RTLD_GLOBAL);
-    if (!handle) {
-        AudioLinkLogger.error("Could not load SongCore: {}", dlerror());
-        return;
-    }
-
-    auto registerCapability = reinterpret_cast<RegisterCapability_t>(dlsym(handle, symbolNdk));
-    if (!registerCapability) registerCapability = reinterpret_cast<RegisterCapability_t>(dlsym(handle, symbolStd));
-    if (!registerCapability) {
-        AudioLinkLogger.error("SongCore RegisterCapability symbol was not found.");
-        return;
-    }
-
-    registerCapability(capability, capabilityLength);
-    AudioLinkLogger.info("Registered AudioLink capability with Quest SongCore.");
-}
-
 MAKE_HOOK_MATCH(ColorManagerInstaller_InstallBindings, &GlobalNamespace::ColorManagerInstaller::InstallBindings, void, GlobalNamespace::ColorManagerInstaller* self) {
     ColorManagerInstaller_InstallBindings(self);
-    RegisterAudioLinkCapability();
     auto menuProvider = AudioLink::MenuProvider::get_instance();
     if (menuProvider) menuProvider->ColorManagerInstallerProvide(self->_menuColorScheme);
 }
@@ -84,5 +59,8 @@ MOD_EXTERN_FUNC void late_load() {
 
     INSTALL_HOOK(AudioLinkLogger, SongPreviewPlayer_CrossFadeTo);
     INSTALL_HOOK(AudioLinkLogger, ColorManagerInstaller_InstallBindings);
-    RegisterAudioLinkCapability();
+
+    // Let SongCore know AudioLink is installed so maps requiring it are playable.
+    SongCore::API::Capabilities::RegisterCapability("AudioLink");
+    AudioLinkLogger.info("Registered AudioLink capability with SongCore.");
 }
