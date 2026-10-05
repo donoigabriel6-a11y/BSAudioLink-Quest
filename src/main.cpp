@@ -1,14 +1,10 @@
+#include "_config.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "custom-types/shared/register.hpp"
 
 #if __has_include("pinkcore/shared/RequirementAPI.hpp")
 #include "pinkcore/shared/RequirementAPI.hpp"
 #define PINKCORE
-#endif
-
-#if __has_include("songcore/shared/Capabilities.hpp")
-#include "songcore/shared/Capabilities.hpp"
-#define SONGCORE
 #endif
 
 #include "config.hpp"
@@ -32,53 +28,51 @@
 
 #include "lapiz/shared/zenject/Zenjector.hpp"
 
-ModInfo modInfo{MOD_ID, VERSION};
+#include "songcore/shared/Capabilities.hpp"
 
-Logger& getLogger() {
-    static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
-    return *logger;
-}
 
 MAKE_HOOK_MATCH(SongPreviewPlayer_CrossFadeTo, static_cast<void (GlobalNamespace::SongPreviewPlayer::*)(::UnityEngine::AudioClip*, float, float, float, bool, ::System::Action*)>(&GlobalNamespace::SongPreviewPlayer::CrossfadeTo), void, GlobalNamespace::SongPreviewPlayer* self, ::UnityEngine::AudioClip* audioClip, float musicVolume, float startTime, float duration, bool isDefault, ::System::Action* onFadeOutCallback) {
-    getLogger().info("SongPreviewPlayer_CrossFadeTo");
+    AudioLinkLogger.info("SongPreviewPlayer_CrossFadeTo");
     SongPreviewPlayer_CrossFadeTo(self, audioClip, musicVolume, startTime, duration, isDefault, onFadeOutCallback);
     auto menuProvider = AudioLink::MenuProvider::get_instance();
     if (menuProvider) {
-        menuProvider->SongPreviewPlayerProvide(self->activeChannel, self->audioSourceControllers);
+        menuProvider->SongPreviewPlayerProvide(self->_activeChannel, self->_audioSourceControllers);
     } else {
-        getLogger().info("No menu provider exists!");
+        AudioLinkLogger.info("No menu provider exists!");
     }
 }
 
 MAKE_HOOK_MATCH(ColorManagerInstaller_InstallBindings, &GlobalNamespace::ColorManagerInstaller::InstallBindings, void, GlobalNamespace::ColorManagerInstaller* self) {
-    getLogger().info("ColorManagerInstaller_InstallBindings");
+    AudioLinkLogger.info("ColorManagerInstaller_InstallBindings");
     ColorManagerInstaller_InstallBindings(self);
     auto menuProvider = AudioLink::MenuProvider::get_instance();
     if (menuProvider) {
-        menuProvider->ColorManagerInstallerProvide(self->menuColorScheme);
+        menuProvider->ColorManagerInstallerProvide(self->_menuColorScheme);
     } else {
-        getLogger().info("No menu provider exists!");
+        AudioLinkLogger.info("No menu provider exists!");
     }
 }
 
-extern "C" void setup(ModInfo& info) {
-    info = modInfo;
+MOD_EXTERN_FUNC void setup(CModInfo *info) noexcept {
+  *info = modInfo.to_c();
+  Paper::Logger::RegisterFileContextId(AudioLinkLogger.tag);
 }
 
-extern "C" void load() {
+
+MOD_EXTERN_FUNC void late_load() {
     il2cpp_functions::Init();
 
     if (!LoadConfig()) SaveConfig();
     custom_types::Register::AutoRegister();
 
-    auto& logger = getLogger();
+    auto& logger = AudioLinkLogger;
     auto zenjector = Lapiz::Zenject::Zenjector::Get();
     zenjector->Install(Lapiz::Zenject::Location::Player, [](::Zenject::DiContainer* container){
         container->BindInterfacesTo<AudioLink::GameProvider*>()->AsSingle()->NonLazy();
     });
     zenjector->Install(Lapiz::Zenject::Location::App, [](::Zenject::DiContainer* container){
         container->BindInterfacesAndSelfTo<AudioLink::AssetBundleManager*>()->AsSingle();
-        container->BindInterfacesAndSelfTo<AudioLink::AudioLink*>()->AsSingle();
+        container->BindInterfacesAndSelfTo<AudioLink::AudioLinkObj*>()->AsSingle();
     });
     zenjector->Install(Lapiz::Zenject::Location::Menu, [](::Zenject::DiContainer* container){
         container->Bind<AudioLink::MenuProvider*>()->AsSingle()->NonLazy();
@@ -86,13 +80,11 @@ extern "C" void load() {
 
     INSTALL_HOOK(logger, SongPreviewPlayer_CrossFadeTo);
     INSTALL_HOOK(logger, ColorManagerInstaller_InstallBindings);
-
+    
 #ifdef SONGCORE
     SongCore::API::Capabilities::RegisterCapability("AudioLink");
-    logger.info("Registered AudioLink with SongCore capability API");
-#endif
-
-#ifdef PINKCORE
-    PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
+    // Register installed so maps could use this as a suggestion, or sabers could check if it was installed
+    // PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
+    
 #endif
 }
