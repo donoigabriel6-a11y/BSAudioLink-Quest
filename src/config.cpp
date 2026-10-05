@@ -1,19 +1,23 @@
 #include "config.hpp"
+#include "ShaderProperties.hpp"
+#include "_config.hpp"
 #include "beatsaber-hook/shared/config/config-utils.hpp"
 
 config_t config;
 
-extern Logger& getLogger();
+
+
 Configuration& get_config() {
-    static Configuration config({MOD_ID, VERSION});
+    static Configuration config(modInfo);
     config.Load();
     return config;
 }
 
+
 #define Save(identifier) doc.AddMember(#identifier, config.identifier, allocator)
 
 void SaveConfig() {
-    getLogger().info("Saving Configuration...");
+    AudioLinkLogger.info("Saving Configuration...");
     rapidjson::Document& doc = get_config().config;
 
     doc.RemoveAllMembers();
@@ -21,7 +25,7 @@ void SaveConfig() {
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
     Save(showTestPlane);
     get_config().Write();
-    getLogger().info("Saved Configuration!");
+    AudioLinkLogger.info("Saved Configuration!");
 }
 
 #define GET_BOOL(identifier)                                            \
@@ -32,13 +36,13 @@ void SaveConfig() {
         foundEverything = false;
 
 bool LoadConfig() {
-    getLogger().info("Loading Configuration...");
+    AudioLinkLogger.info("Loading Configuration...");
     bool foundEverything = true;
     rapidjson::Document& doc = get_config().config;
 
     GET_BOOL(showTestPlane);
 
     if (foundEverything)
-        getLogger().info("Loaded Configuration!");
+        AudioLinkLogger.info("Loaded Configuration!");
     return foundEverything;
 }
