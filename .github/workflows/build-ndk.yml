@@ -80,6 +80,10 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: QPM NDK Resolve
+        run: |
+          qpm ndk resolve
+
       - name: QPM Restore
         run: |
           qpm restore
