@@ -6,6 +6,11 @@
 #define PINKCORE
 #endif
 
+#if __has_include("songcore/shared/Capabilities.hpp")
+#include "songcore/shared/Capabilities.hpp"
+#define SONGCORE
+#endif
+
 #include "config.hpp"
 #include "AssetBundleManager.hpp"
 #include "AudioLink.hpp"
@@ -82,9 +87,12 @@ extern "C" void load() {
     INSTALL_HOOK(logger, SongPreviewPlayer_CrossFadeTo);
     INSTALL_HOOK(logger, ColorManagerInstaller_InstallBindings);
 
+#ifdef SONGCORE
+    SongCore::API::Capabilities::RegisterCapability("AudioLink");
+    logger.info("Registered AudioLink with SongCore capability API");
+#endif
+
 #ifdef PINKCORE
-    // Register installed so maps could use this as a suggestion, or sabers could check if it was installed
     PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
 #endif
 }
-// CI build verification.
