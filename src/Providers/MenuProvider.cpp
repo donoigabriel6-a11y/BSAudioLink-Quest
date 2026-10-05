@@ -2,9 +2,9 @@
 
 #include "GlobalNamespace/PlayerData.hpp"
 #include "GlobalNamespace/ColorSchemesSettings.hpp"
+#include "ShaderProperties.hpp"
 DEFINE_TYPE(AudioLink, MenuProvider);
 
-extern Logger& getLogger();
 
 namespace AudioLink {
     MenuProvider* MenuProvider::instance;
@@ -12,8 +12,8 @@ namespace AudioLink {
         return instance;
     }
 
-    void MenuProvider::ctor(AudioLink* audioLink, GlobalNamespace::PlayerDataModel* playerDataModel) {
-        getLogger().info("MenuProvider ctor!");
+    void MenuProvider::ctor(AudioLinkObj* audioLink, GlobalNamespace::PlayerDataModel* playerDataModel) {
+        AudioLinkLogger.info("MenuProvider ctor!");
         static auto _audioLink_info = il2cpp_functions::class_get_field_from_name(klass, "_audioLink");
         static auto _playerDataModel_info = il2cpp_functions::class_get_field_from_name(klass, "_playerDataModel");
 
@@ -23,7 +23,7 @@ namespace AudioLink {
     }
 
     void MenuProvider::dtor() {
-        Finalize();
+        // Finalize();
         instance = nullptr;
     }
 

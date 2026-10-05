@@ -18,12 +18,12 @@ struct IncludedAsset {
         return array;
     }
 
-    operator std::string_view() const {
-        return { reinterpret_cast<char*>(array->values), array->Length() };
+    // Beat Saber 1.40.8 codegen exposes Array data through _values/get_Length().\n    operator std::string_view() const {
+        return { reinterpret_cast<char*>(array->_values), array->get_Length() };
     }
     
     operator std::span<uint8_t>() const {
-        return { array->values, array->Length() };
+        return { array->_values, array->get_Length() };
     }
 
     void init() const {
@@ -43,6 +43,6 @@ struct IncludedAsset {
 
 namespace IncludedAssets {
 
-	DECLARE_FILE(Bundle)
+    DECLARE_FILE(Bundle)
 
 }

@@ -4,24 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
-    paths-ignore:
-      - "**.yml"
-      - "!.github/workflows/build-ndk.yml"
-      - "**.json"
-      - "!qpm.json"
-      - "!mod.template.json"
-      - "**.txt"
-      - "!CMakeLists.txt"
-      - "**.ps1"
-      - "!build.ps1"
-      - "!createqmod.ps1"
-      - "**.md"
-      - ".gitignore"
-  pull_request:
-    branches:
-      - master
-
+      - update/1.40.8
 env:
   module_id: bs-audiolink
   qmodName: AudioLink
@@ -48,40 +31,48 @@ jobs:
           cat ${GITHUB_WORKSPACE}/ndkpath.txt
 
       - name: Get QPM
-        if: steps.cache-qpm.outputs.cache-hit != 'true'
+        if: steps.cache-qpm-deps.outputs.cache-hit != 'true'
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: cargo-build.yml
-          name: linux-qpm-rust
+          name: qpm-linux-x64
           path: QPM
           repo: QuestPackageManager/QPM.CLI
 
       - name: Put QPM on path
         run: |
-          chmod +x ./QPM/qpm-rust
+          chmod +x ./QPM/qpm
           echo "${GITHUB_WORKSPACE}/QPM" >> $GITHUB_PATH
 
       - name: QPM Collapse
         run: |
-          qpm-rust collapse
+          qpm collapse
 
       - name: QPM Dependencies Cache
         id: cache-qpm-deps
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         env:
           cache-name: cache-qpm-deps
         with:
-          path: /home/runner/.local/share/QPM-Rust/cache
+          path: /home/runner/.local/share/QPM-RS/cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('qpm.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: QPM NDK Download
+        run: |
+          qpm ndk download 27.2.12479018
+
+      - name: QPM NDK Resolve
+        run: |
+          qpm ndk resolve
+
       - name: QPM Restore
         run: |
-          qpm-rust restore
+          qpm restore
 
       - name: List Post Restore
         run: |
@@ -90,45 +81,39 @@ jobs:
           echo libs:
           ls -la ${GITHUB_WORKSPACE}/extern/libs
           echo cache:
-          ls -la $HOME/.local/share/QPM-Rust/cache
+          ls -la $HOME/.local/share/QPM-RS/cache
 
-      - name: Build & Create Qmod
+      - name: Verify source after QPM restore
+        run: |
+          echo "assets.hpp after QPM restore:"
+          sed -n '19,28p' include/assets.hpp
+          if grep -q 'array->values\|array->Length()' include/assets.hpp; then
+            echo "::error::QPM restore changed assets.hpp back to the old Array API"
+            git diff -- include/assets.hpp || true
+            exit 1
+          fi
+
+      - name: Build
         run: |
           cd ${GITHUB_WORKSPACE}
-          qpm-rust s qmod
+          pwsh ./scripts/build.ps1 -clean
+          echo "Built libraries:"
+          ls -lah ./build
 
-      - name: Get Library Name
-        id: libname
+      - name: Create Qmod
         run: |
-          cd ./build/
-          pattern="lib${module_id}*.so"
-          files=( $pattern )
-          echo ::set-output name=NAME::"${files[0]}"
-
-      - name: Upload release artifact
-        if: "${{ env.WEBHOOK != '' }}"
-        uses: tsickert/discord-webhook@v3.2.0
-        with:
-          webhook-url: ${{ env.WEBHOOK }}
-          content: "${{ env.CI_SHA_SHORT }} - `${{ github.event.head_commit.message }}`"
-          username: "${{ github.repository }}"
-          avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
-          filename: ./build/${{ steps.libname.outputs.NAME }}
-
-      - name: Upload debug artifact
-        if: "${{ env.WEBHOOK != '' }}"
-        uses: tsickert/discord-webhook@v3.2.0
-        with:
-          webhook-url: ${{ env.WEBHOOK }}
-          username: "${{ github.repository }}"
-          avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
-          filename: ./build/debug/${{ steps.libname.outputs.NAME }}
+          cd ${GITHUB_WORKSPACE}
+          qpm qmod manifest
+          pwsh ./scripts/createqmod.ps1 AudioLink -clean
+          test -f ./AudioLink.qmod
+          ls -lh ./AudioLink.qmod
 
       - name: Upload qmod
         if: "${{ env.WEBHOOK != '' }}"
         uses: tsickert/discord-webhook@v3.2.0
         with:
           webhook-url: ${{ env.WEBHOOK }}
+          content: "**Build:** #${{ github.run_number }} | **Build Succeeded:** 🟢 | **Download Qmod here:** ⬇️"
           username: "${{ github.repository }}"
           avatar-url: "http://github.com/${{ env.CI_ACTOR }}.png"
           filename: ./${{ env.qmodName }}.qmod

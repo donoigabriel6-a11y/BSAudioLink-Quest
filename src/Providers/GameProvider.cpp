@@ -1,11 +1,11 @@
 #include "Providers/GameProvider.hpp"
+#include "ShaderProperties.hpp"
 
 DEFINE_TYPE(AudioLink, GameProvider);
 
-extern Logger& getLogger();
 namespace AudioLink {
     
-    void GameProvider::ctor(AudioLink* audioLink, GlobalNamespace::AudioTimeSyncController* audioTimeSyncController, GlobalNamespace::ColorScheme* colorScheme) {
+    void GameProvider::ctor(AudioLinkObj* audioLink, GlobalNamespace::AudioTimeSyncController* audioTimeSyncController, GlobalNamespace::ColorScheme* colorScheme) {
         static auto _audioLink_info = il2cpp_functions::class_get_field_from_name(klass, "_audioLink");
         static auto _audioTimeSyncController_info = il2cpp_functions::class_get_field_from_name(klass, "_audioTimeSyncController");
         static auto _colorScheme_info = il2cpp_functions::class_get_field_from_name(klass, "_colorScheme");
@@ -16,8 +16,8 @@ namespace AudioLink {
     }
 
     void GameProvider::Initialize() {
-        getLogger().info("GameProvider Initialize");
-        _audioLink->SetAudioSource(_audioTimeSyncController->audioSource);
+        AudioLinkLogger.info("GameProvider Initialize");
+        _audioLink->SetAudioSource(_audioTimeSyncController->_audioSource);
         _audioLink->SetColorScheme(_colorScheme);
     }
 }

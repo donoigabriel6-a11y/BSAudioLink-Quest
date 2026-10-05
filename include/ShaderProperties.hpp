@@ -1,9 +1,7 @@
 #pragma once
 
 #include "UnityEngine/Shader.hpp"
-
-
-extern Logger& getLogger();
+#include "config.hpp"
 
 namespace ShaderProperties {
     struct ShaderPropID {
@@ -11,20 +9,19 @@ namespace ShaderProperties {
         constexpr ShaderPropID(const char (&str)[sz]) : str(str), sz(sz) {}
 
         operator int () const {
-            if (id == 0) {
+            if (id == -1) {
                 id = UnityEngine::Shader::PropertyToID(std::string_view(str, sz)); 
-                getLogger().info("Shader Prop '%s': %d", str, id);
+                AudioLinkLogger.info("Shader Prop '{}': {}", str, id);
             }
             return id;
         }
 
         private:
-            mutable int id = 0;
+            mutable int id = -1;
             const size_t sz;
             const char* str;
     };
 
-    // properties based on https://github.com/Aeroluna/BSAudioLink/blob/master/AudioLink/Scripts/AudioLink.cs
     static const ShaderPropID _audioTexture("_AudioTexture");
     static const ShaderPropID _versionNumberAndFPSProperty("_VersionNumberAndFPSProperty");
     static const ShaderPropID _playerCountAndData("_PlayerCountAndData");
