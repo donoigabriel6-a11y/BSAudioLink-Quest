@@ -18,7 +18,7 @@ struct IncludedAsset {
         return array;
     }
 
-    operator std::string_view() const {
+    // Beat Saber 1.40.8 codegen exposes Array data through _values/get_Length().\n    operator std::string_view() const {
         return { reinterpret_cast<char*>(array->_values), array->get_Length() };
     }
     
