@@ -37,6 +37,7 @@
     {"id": "scotland2", "versionRange": "^0.1.6", "additionalData": {"includeQmod": false, "private": true}},
     {"id": "paper2_scotland2", "versionRange": "^4.6.4", "additionalData": {}},
     {"id": "lapiz", "versionRange": "^0.2.23", "additionalData": {}},
-    {"id": "sombrero", "versionRange": "^0.1.43", "additionalData": {}}
+    {"id": "sombrero", "versionRange": "^0.1.43", "additionalData": {}},
+    {"id": "songcore", "versionRange": "^1.0.0", "additionalData": {"includeQmod": false}}
   ]
 }
