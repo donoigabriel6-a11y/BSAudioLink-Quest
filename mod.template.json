@@ -11,10 +11,11 @@
     {"id": "beatsaber-hook", "version": "^6.4.2"},
     {"id": "custom-types", "version": "^0.18.3"},
     {"id": "paper2_scotland2", "version": "^4.6.4"},
-    {"id": "lapiz", "version": "^0.2.23"}
+    {"id": "lapiz", "version": "^0.2.23"},
+    {"id": "songcore", "version": "^1.0.0"}
   ],
   "modFiles": [],
-  "libraryFiles": [],
+  "libraryFiles": ["libbs-audiolink.so"],
   "fileCopies": [],
   "copyExtensions": []
 }
