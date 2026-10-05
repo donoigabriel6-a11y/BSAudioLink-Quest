@@ -93,7 +93,14 @@ jobs:
           echo cache:
           ls -la $HOME/.local/share/QPM-RS/cache
 
-      - name: Build & Create Qmod
+      - name: Build
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          pwsh ./scripts/build.ps1 -clean
+          echo "Built libraries:"
+          ls -lah ./build
+
+      - name: Create Qmod
         run: |
           cd ${GITHUB_WORKSPACE}
           qpm qmod manifest
