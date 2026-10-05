@@ -80,11 +80,13 @@ MOD_EXTERN_FUNC void late_load() {
 
     INSTALL_HOOK(logger, SongPreviewPlayer_CrossFadeTo);
     INSTALL_HOOK(logger, ColorManagerInstaller_InstallBindings);
-    
+
 #ifdef SONGCORE
     SongCore::API::Capabilities::RegisterCapability("AudioLink");
-    // Register installed so maps could use this as a suggestion, or sabers could check if it was installed
-    // PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
-    
+#endif
+
+#ifdef PINKCORE
+    // Tell PinkCore that AudioLink is installed so map/mod requirements can resolve it.
+    PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
 #endif
 }
