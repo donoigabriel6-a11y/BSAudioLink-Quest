@@ -2,6 +2,9 @@ name: NDK build
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - update/1.40.8:
 env:
   module_id: bs-audiolink
   qmodName: AudioLink
@@ -79,6 +82,16 @@ jobs:
           ls -la ${GITHUB_WORKSPACE}/extern/libs
           echo cache:
           ls -la $HOME/.local/share/QPM-RS/cache
+
+      - name: Verify source after QPM restore
+        run: |
+          echo "assets.hpp after QPM restore:"
+          sed -n '19,28p' include/assets.hpp
+          if grep -q 'array->values\|array->Length()' include/assets.hpp; then
+            echo "::error::QPM restore changed assets.hpp back to the old Array API"
+            git diff -- include/assets.hpp || true
+            exit 1
+          fi
 
       - name: Build
         run: |
