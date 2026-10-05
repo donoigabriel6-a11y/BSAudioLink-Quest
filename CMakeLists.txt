@@ -12,8 +12,8 @@ set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_compile_options(-frtti -fexceptions -fvisibility=hidden -O3)
-add_compile_definitions(VERSION=\\"${MOD_VERSION}\\")
-add_compile_definitions(MOD_ID=\\"${MOD_ID}\\")
+add_compile_definitions(VERSION=\"${MOD_VERSION}\")
+add_compile_definitions(MOD_ID=\"${MOD_ID}\")
 
 RECURSE_FILES(cpp_file_list ${SOURCE_DIR}/*.cpp)
 RECURSE_FILES(c_file_list ${SOURCE_DIR}/*.c)
