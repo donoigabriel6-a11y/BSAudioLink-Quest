@@ -2,27 +2,6 @@ name: NDK build
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-      - update/1.40.8
-    paths-ignore:
-      - "**.yml"
-      - "!.github/workflows/build-ndk.yml"
-      - "**.json"
-      - "!qpm.json"
-      - "!mod.template.json"
-      - "**.txt"
-      - "!CMakeLists.txt"
-      - "**.ps1"
-      - "!build.ps1"
-      - "!createqmod.ps1"
-      - "**.md"
-      - ".gitignore"
-  pull_request:
-    branches:
-      - master
-
 env:
   module_id: bs-audiolink
   qmodName: AudioLink
