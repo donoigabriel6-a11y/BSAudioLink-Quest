@@ -1,6 +1,7 @@
 #include "_config.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "custom-types/shared/register.hpp"
+#include <dlfcn.h>
 
 #include "config.hpp"
 #include "AssetBundleManager.hpp"
@@ -37,9 +38,58 @@ MAKE_HOOK_MATCH(SongPreviewPlayer_CrossFadeTo, static_cast<void (GlobalNamespace
     }
 }
 
+static void RegisterAudioLinkCapability() {
+    // Quest SongCore 1.1.x exports RegisterCapability as a C++ string_view symbol.
+    // Resolve it at runtime instead of relying on a static C++ call.
+    using RegisterCapability_t = void (*)(const char*, __SIZE_TYPE__);
+
+    static constexpr char capability[] = "AudioLink";
+    static constexpr __SIZE_TYPE__ capabilityLength = sizeof(capability) - 1;
+
+    static constexpr char songCoreSymbolNdk[] =
+        "_ZN8SongCore3API12Capabilities18RegisterCapabilityENSt6__ndk117basic_string_viewIcNS2_11char_traitsIcEEEE";
+    static constexpr char songCoreSymbolStd[] =
+        "_ZN8SongCore3API12Capabilities18RegisterCapabilityESt17basic_string_viewIcSt11char_traitsIcEE";
+
+    auto registerCapability = reinterpret_cast<RegisterCapability_t>(
+        dlsym(RTLD_DEFAULT, songCoreSymbolNdk)
+    );
+
+    if (!registerCapability) {
+        registerCapability = reinterpret_cast<RegisterCapability_t>(
+            dlsym(RTLD_DEFAULT, songCoreSymbolStd)
+        );
+    }
+
+    if (!registerCapability) {
+        void* songCoreHandle = dlopen("libsongcore.so", RTLD_NOW | RTLD_GLOBAL);
+        if (songCoreHandle) {
+            registerCapability = reinterpret_cast<RegisterCapability_t>(
+                dlsym(songCoreHandle, songCoreSymbolNdk)
+            );
+            if (!registerCapability) {
+                registerCapability = reinterpret_cast<RegisterCapability_t>(
+                    dlsym(songCoreHandle, songCoreSymbolStd)
+                );
+            }
+        } else {
+            AudioLinkLogger.error("Could not dlopen libsongcore.so: {}", dlerror());
+        }
+    }
+
+    if (!registerCapability) {
+        AudioLinkLogger.error("Could not find SongCore RegisterCapability symbol.");
+        return;
+    }
+
+    registerCapability(capability, capabilityLength);
+    AudioLinkLogger.info("Registered AudioLink capability with Quest SongCore.");
+}
+
 MAKE_HOOK_MATCH(ColorManagerInstaller_InstallBindings, &GlobalNamespace::ColorManagerInstaller::InstallBindings, void, GlobalNamespace::ColorManagerInstaller* self) {
     AudioLinkLogger.info("ColorManagerInstaller_InstallBindings");
     ColorManagerInstaller_InstallBindings(self);
+    RegisterAudioLinkCapability();
     auto menuProvider = AudioLink::MenuProvider::get_instance();
     if (menuProvider) {
         menuProvider->ColorManagerInstallerProvide(self->_menuColorScheme);
@@ -76,46 +126,6 @@ MOD_EXTERN_FUNC void late_load() {
     INSTALL_HOOK(logger, SongPreviewPlayer_CrossFadeTo);
     INSTALL_HOOK(logger, ColorManagerInstaller_InstallBindings);
 
-    // Quest SongCore 1.1.x exports RegisterCapability as a C++ string_view symbol.
-    // Resolve it at runtime instead of relying on a static C++ call.
-    using RegisterCapability_t = void (*)(const char*, std::size_t);
-
-    static constexpr char capability[] = "AudioLink";
-    static constexpr std::size_t capabilityLength = sizeof(capability) - 1;
-
-    static constexpr char songCoreSymbolNdk[] =
-        "_ZN8SongCore3API12Capabilities18RegisterCapabilityENSt6__ndk117basic_string_viewIcNS2_11char_traitsIcEEEE";
-    static constexpr char songCoreSymbolStd[] =
-        "_ZN8SongCore3API12Capabilities18RegisterCapabilityESt17basic_string_viewIcSt11char_traitsIcEE";
-
-    auto registerCapability = reinterpret_cast<RegisterCapability_t>(
-        dlsym(RTLD_DEFAULT, songCoreSymbolNdk)
-    );
-
-    if (!registerCapability) {
-        registerCapability = reinterpret_cast<RegisterCapability_t>(
-            dlsym(RTLD_DEFAULT, songCoreSymbolStd)
-        );
-    }
-
-    if (!registerCapability) {
-        void* songCoreHandle = dlopen("libsongcore.so", RTLD_NOW | RTLD_GLOBAL);
-        if (songCoreHandle) {
-            registerCapability = reinterpret_cast<RegisterCapability_t>(
-                dlsym(songCoreHandle, songCoreSymbolNdk)
-            );
-            if (!registerCapability) {
-                registerCapability = reinterpret_cast<RegisterCapability_t>(
-                    dlsym(songCoreHandle, songCoreSymbolStd)
-                );
-            }
-        }
-    }
-
-    if (registerCapability) {
-        registerCapability(capability, capabilityLength);
-        AudioLinkLogger.info("Registered AudioLink capability with Quest SongCore.");
-    } else {
-        AudioLinkLogger.error("Could not find SongCore RegisterCapability symbol.");
-    }
+    // Register once as early as possible, then retry from the menu hook after SongCore is initialized.
+    RegisterAudioLinkCapability();
 }
