@@ -2,11 +2,6 @@
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "custom-types/shared/register.hpp"
 
-#if __has_include("pinkcore/shared/RequirementAPI.hpp")
-#include "pinkcore/shared/RequirementAPI.hpp"
-#define PINKCORE
-#endif
-
 #include "config.hpp"
 #include "AssetBundleManager.hpp"
 #include "AudioLink.hpp"
@@ -81,12 +76,8 @@ MOD_EXTERN_FUNC void late_load() {
     INSTALL_HOOK(logger, SongPreviewPlayer_CrossFadeTo);
     INSTALL_HOOK(logger, ColorManagerInstaller_InstallBindings);
 
-#ifdef SONGCORE
+    // Quest uses SongCore for map requirements. Register AudioLink as a SongCore capability.
     SongCore::API::Capabilities::RegisterCapability("AudioLink");
-#endif
-
-#ifdef PINKCORE
-    // Tell PinkCore that AudioLink is installed so map/mod requirements can resolve it.
-    PinkCore::RequirementAPI::RegisterInstalled("AudioLink");
-#endif
+    AudioLinkLogger.info("SongCore AudioLink capability registered: {}",
+        SongCore::API::Capabilities::IsCapabilityRegistered("AudioLink"));
 }
