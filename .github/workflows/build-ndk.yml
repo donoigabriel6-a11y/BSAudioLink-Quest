@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - update/1.40.8:
+      - update/1.40.8
 env:
   module_id: bs-audiolink
   qmodName: AudioLink
